@@ -32,7 +32,7 @@ router.post('/',[ auth, [
         })
 
         const post = await newPost.save()
-        io.getIO().emit('posts', {action: 'create', post: post})
+        io.getIO().broadcast('posts', {action: 'create', post: post})
         res.json(post)
 
     } catch (err) {
