@@ -32,7 +32,7 @@ router.post('/',[ auth, [
         })
 
         const post = await newPost.save()
-        io.getIO().broadcast('posts', {action: 'create', post: post})
+        io.getIO().emit('posts', {action: 'create', post: post})
         res.json(post)
 
     } catch (err) {
@@ -115,15 +115,15 @@ router.put('/like/:id', auth, async (req, res) => {
         let post = await Post.findById(req.params.id);
 
         // Check if post is already liked
-        if (post.like.filter(like => like.user.toString() === req.user.id)) {
+        if (post.likes.filter(like => like.user.toString() === req.user.id).length > 0) {
             return res.status(400).json({msg: 'Post already liked'})
         }
 
-        post.like.unshift( {user: req.user.id} )
+        post.likes.unshift( {user: req.user.id} )
 
         await post.save()
 
-        res.json(post.like)
+        res.json(post.likes)
     } catch (err) {
         console.log(err.message);
         res.status(500).sendFile('Server Error')
@@ -138,18 +138,18 @@ router.put('/unlike/:id', auth, async (req, res) => {
         const post = await Post.findById(req.params.id);
 
         // Check if post is already liked
-        if (post.like.filter(likes => likes.user.toString() === req.user.id).length === 0) {
+        if (post.likes.filter(like => like.user.toString() === req.user.id).length === 0) {
             return res.status(400).json({msg: 'Post has not yet been liked'})
         }
 
         // post.like.unshift( {user: req.user.id} )
         // Get remove index
-        const removeIndex = post.like.map(like => like.user.toString()).indexOf(req.user.id)
-        post.like.splice(removeIndex, 1)
+        const removeIndex = post.likes.map(like => like.user.toString()).indexOf(req.user.id)
+        post.likes.splice(removeIndex, 1)
 
         await post.save()
 
-        res.json(post.like)
+        res.json(post.likes)
     } catch (err) {
         console.log(err.message);
         res.status(500).sendFile('Server Error')
